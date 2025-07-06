@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import prisma from '../database/db';
 import { errorHandler } from '../middleware';
-dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -16,12 +14,7 @@ class UsersController {
 
             // check if email or username is present
             if (!email && !username) {
-                errorHandler("Email and Username is required", req, res, next)
-                res.status(400).json({
-                    success: false,
-                    error: 'Email is required',
-                });
-                return;
+                return errorHandler("Email and Username is required", req, res, next)
             }
 
             // check if email already exixts
@@ -30,14 +23,7 @@ class UsersController {
             });
 
             if (existingUser){
-                errorHandler("Email already exists", req, res, next)
-
-                res.status(400).json({
-                    success: false,
-                    error: 'Email already exists',
-                });
-
-                return;
+                return errorHandler("Email already exists", req, res, next)
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -67,14 +53,18 @@ class UsersController {
             });
 
         } catch (error) {
-            errorHandler(error, req, res, next)
             console.log("err: ", error)
+            return errorHandler(error, req, res, next)
         }
     }
+
 }
 
 
 export default new UsersController();
+
+
+
 
 
 

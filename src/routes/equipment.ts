@@ -5,6 +5,6 @@ const router = Router();
 router.post('/', EquipmentController.addEquipment);
 router.get('/:id', EquipmentController.getEquipmentById);
 router.get('/', EquipmentController.getAllEquipments);
-
+router.put('/:id', EquipmentController.editEquipmentDetails);
 
 export default router;

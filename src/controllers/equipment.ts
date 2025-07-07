@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { errorHandler } from '../middleware';
 
@@ -126,6 +127,54 @@ class EquipmentController {
             console.log("err: ", error)
         }
     }
+
+    public editEquipmentDetails = async(req: Request, res: Response, next: any) => {
+
+        try {
+            const { id } = req.params;
+            const { name, type, description, targetMuscles } = req.body;
+            const equipmentId = parseInt(id);
+
+            if (isNaN(equipmentId)) {
+                return errorHandler("Invalid equipment Id", req, res, next);
+            }
+
+            const equipment = await prisma.equipment.findUnique({ 
+                where: { 
+                    id: equipmentId 
+                } 
+            });
+
+            if (!equipment) {
+                return errorHandler('Equipment not found', req, res, next);
+            }
+
+            const data: Prisma.EquipmentUpdateInput = {
+                ...(name && { name }),
+                ...(type && { type }),
+                ...(description && { description }),
+                ...(targetMuscles && { targetMuscles })
+            };
+
+            const updatedEquipment = await prisma.equipment.update({
+                where: { 
+                    id: equipmentId 
+                }, 
+                data
+            });
+
+            res.status(200).json({
+                success: true,
+                data: updatedEquipment,
+                message: 'Equipment updated successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+    
 }
 
 

@@ -197,6 +197,60 @@ class UsersController {
         }
     }
 
+
+    public deleteUser = async(req: Request, res: Response, next: any) => {   
+
+        try {
+            const { id } = req.params;
+            const userId = parseInt(id);
+
+            if (isNaN(userId)) {
+                return errorHandler("Invalid user Id", req, res, next);
+            }
+
+            const user = await prisma.user.findUnique({ 
+                where: { 
+                    id: userId 
+                } 
+            });
+
+            if (!user) {
+                return errorHandler('User not found', req, res, next);
+            }
+
+            await prisma.$transaction([
+                prisma.targetMuscle.deleteMany({
+                    where: {
+                        equipment: {
+                            id: userId 
+                        }
+                    }
+                }),
+
+                prisma.equipment.deleteMany({ 
+                    where: { 
+                        id: userId  
+                    } 
+                }),
+
+                prisma.user.delete({ 
+                    where: { 
+                        id: userId
+                    } 
+                })
+            ]);
+
+            res.status(200).json({
+                success: true,
+                message: 'User deleted successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
 }
 
 

@@ -105,6 +105,52 @@ class UsersController {
         }
     }
 
+
+    public getUserById = async(req: Request, res: Response, next: any) => {
+
+        try {
+            const { id } = req.params;
+            const userId = parseInt(id);
+
+            if (isNaN(userId)) {
+                return errorHandler("Invalid user Id", req, res, next);
+            }
+
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: userId
+                },
+                include: {
+                    equipments: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            description: true,
+                            targetMuscles: true,
+                            createdAt: true,
+                            updatedAt: true,
+                        },
+                    },
+                },
+            });
+
+            if (!user) {
+                return errorHandler("User not found", req, res, next);
+            }
+
+            res.status(200).json({
+                success: true,
+                data: user,
+                message: 'User retrieved successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
 }
 
 

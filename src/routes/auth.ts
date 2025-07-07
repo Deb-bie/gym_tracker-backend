@@ -4,5 +4,7 @@ const router = Router();
 
 router.post('/register', UsersController.registerUser);
 router.post('/login', UsersController.loginUser);
+router.get('/:id', UsersController.getUserById);
+
 
 export default router;

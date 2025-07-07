@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../database/db';
 import { errorHandler } from '../middleware';
+import { Prisma } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -143,6 +144,51 @@ class UsersController {
                 success: true,
                 data: user,
                 message: 'User retrieved successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
+    public updateUserDetails = async(req: Request, res: Response, next: any) => {
+
+        try {
+            const { id } = req.params;
+            const { email, username } = req.body;
+            const userId = parseInt(id);
+
+            if (isNaN(userId)) {
+                return errorHandler("Invalid user Id", req, res, next);
+            }
+
+            const user = await prisma.user.findUnique({ 
+                where: { 
+                    id: userId 
+                } 
+            });
+
+            if (!user) {
+                return errorHandler('User not found', req, res, next);
+            }
+
+            const data: Prisma.UserUpdateInput = {
+                ...(email && { email }),
+                ...(username && { username })
+            };
+
+            const updatedUser = await prisma.user.update({
+                where: { 
+                    id: userId 
+                }, 
+                data
+            });
+
+            res.status(200).json({
+                success: true,
+                data: updatedUser,
+                message: 'User updated successfully',
             });
 
         } catch (error) {

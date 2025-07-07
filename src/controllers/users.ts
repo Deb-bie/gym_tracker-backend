@@ -58,15 +58,54 @@ class UsersController {
         }
     }
 
+
+    public loginUser = async(req: Request, res: Response, next: any) => {
+        const {email, password } = req.body;
+
+        try {
+            // check if email or username is present
+            if (!email && !password) {
+                return errorHandler("Email and Password is required", req, res, next)
+            }
+
+            // check if email exixts
+            const user = await prisma.user.findUnique({
+                where: { email: email }
+            });
+
+            if (!user){
+                return errorHandler("Invalid credentials", req, res, next)
+            }
+
+            const passwordMatch = await bcrypt.compare(password, user.password);
+
+            if (!passwordMatch) {
+                return errorHandler("Invalid credentials", req, res, next)
+            }
+
+            const token = jwt.sign(
+                { 
+                    userId: user.id, 
+                    email: user.email 
+                },
+                JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
+            res.status(200).json({
+                success: true,
+                data: user,
+                token: token,
+                message: 'User logged in successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
 }
 
 
 export default new UsersController();
-
-
-
-
-
-
-
-

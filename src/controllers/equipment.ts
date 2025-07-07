@@ -99,13 +99,6 @@ class EquipmentController {
 
     public getAllEquipments = async(req: Request, res: Response, next: any) => {
         try {
-            const { id } = req.params;
-            const equipmentId = parseInt(id);
-
-            if (isNaN(equipmentId)) {
-                return errorHandler("Invalid user Id", req, res, next);
-            }
-
             const equipments = await prisma.equipment.findMany({
                 include: {
                     targetMuscles: {
@@ -167,6 +160,53 @@ class EquipmentController {
                 success: true,
                 data: updatedEquipment,
                 message: 'Equipment updated successfully',
+            });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
+    public deleteEquipment = async(req: Request, res: Response, next: any) => {   
+
+        try {
+            const { id } = req.params;
+            const equipmentId = parseInt(id);
+
+            if (isNaN(equipmentId)) {
+                return errorHandler("Invalid equipment Id", req, res, next);
+            }
+
+            const equipment = await prisma.equipment.findUnique({ 
+                where: { 
+                    id: equipmentId 
+                } 
+            });
+
+            if (!equipment) {
+                return errorHandler('Equipment not found', req, res, next);
+            }
+
+            await prisma.$transaction([
+                prisma.targetMuscle.deleteMany({
+                    where: {
+                        equipment: {
+                            id: equipmentId 
+                        }
+                    }
+                }),
+
+                prisma.equipment.delete({ 
+                    where: { 
+                        id: equipmentId
+                    } 
+                })
+            ]);
+
+            res.status(200).json({
+                success: true,
+                message: 'Equipment deleted successfully',
             });
 
         } catch (error) {

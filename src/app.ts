@@ -45,6 +45,7 @@ class App {
         endpoints: {
           health: '/api/v1/health',
           equipments: '/api/v1/equipments',
+          users: '/api/v1/users'
         },
       });
     });

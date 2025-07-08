@@ -11,7 +11,7 @@ class UsersController {
 
     public registerUser = async(req: Request, res: Response, next: any) => {
         try {
-            const {email, username, password } = req.body;
+            const {email, username, password } = req.body.body;
 
             // check if email or username is present
             if (!email && !username) {
@@ -61,7 +61,7 @@ class UsersController {
 
 
     public loginUser = async(req: Request, res: Response, next: any) => {
-        const {email, password } = req.body;
+        const {email, password } = req.body.body;
 
         try {
             // check if email or username is present
@@ -99,6 +99,51 @@ class UsersController {
                 token: token,
                 message: 'User logged in successfully',
             });
+
+        } catch (error) {
+            console.log("err: ", error)
+            return errorHandler(error, req, res, next)
+        }
+    }
+
+
+    public getCurrentUser = async(req: Request, res: Response, next: any) => {
+        try {
+            const token  = req.headers.authorization?.split(' ')[1];
+            console.log("token: ", token)
+
+            if (!token) {
+                return errorHandler('Unauthorized', req, res, next)
+            }
+
+            const decoded:any = jwt.verify(token, JWT_SECRET)
+
+            console.log("decoded: ", decoded)
+            console.log("decoded email: ", decoded.email?.toString())
+
+            const user = await prisma.user.findUnique({
+                where: { 
+                    email: decoded.email?.toString()
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            });
+
+            console.log("user: ", user)
+
+            if (!user) {
+                return errorHandler("User not found", req, res, next);
+            }
+
+            res.status(200).json({
+                success: true,
+                data: user,
+                token: token,
+                message: 'successfully',
+            })
 
         } catch (error) {
             console.log("err: ", error)
@@ -156,7 +201,7 @@ class UsersController {
 
         try {
             const { id } = req.params;
-            const { email, username } = req.body;
+            const { email, username } = req.body.body;
             const userId = parseInt(id);
 
             if (isNaN(userId)) {

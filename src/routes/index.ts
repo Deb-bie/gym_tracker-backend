@@ -1,18 +1,6 @@
-// const express = require('express');
-// const router = express.Router();
-
-// const equipmentRoutes = require('./equipment');
-
-// router.use('/equipment', equipmentRoutes);
-
-// module.exports = router;
-
-
-
-// =================
-
 import { Router } from 'express';
 import equipmentRoutes  from './equipment';
+import userRoutes from "./auth"
 
 const router = Router();
 
@@ -26,7 +14,7 @@ router.get('/health', (req, res) => {
 });
 
 // API routes
-
-router.use('/equipment', equipmentRoutes);
+router.use('/equipments', equipmentRoutes);
+router.use('/users', userRoutes )
 
 export default router;

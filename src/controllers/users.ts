@@ -75,7 +75,7 @@ class UsersController {
             });
 
             if (!user){
-                return errorHandler("Invalid credentials", req, res, next)
+                return errorHandler("User not found", req, res, next)
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password);
@@ -132,8 +132,6 @@ class UsersController {
                 }
             });
 
-            console.log("user: ", user)
-
             if (!user) {
                 return errorHandler("User not found", req, res, next);
             }
@@ -148,6 +146,40 @@ class UsersController {
         } catch (error) {
             console.log("err: ", error)
             return errorHandler(error, req, res, next)
+        }
+    }
+
+    public verifyToken = async(token: any) => {
+        try {
+            if (!token) {
+                throw new Error("Unauthorized");
+            }
+
+            const decoded:any = jwt.verify(token, JWT_SECRET)
+            //throw error if decoded is wrong
+
+            console.log("deocded: ", decoded)
+
+            const user = await prisma.user.findUnique({
+                where: { 
+                    email: decoded.email?.toString()
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            });
+
+            if (!user) {
+                throw "User not found";
+            }
+
+            return user
+
+        } catch (error) {
+            console.log("err: ", error)
+            throw error;
         }
     }
 

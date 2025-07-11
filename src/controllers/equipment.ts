@@ -2,23 +2,44 @@ import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import prisma from '../database/db';
 import { errorHandler } from '../middleware';
+import UsersController from "./users" 
 
 class EquipmentController {
 
     public addEquipment = async(req: Request, res: Response, next: any) => {
         try {
-            const { name, type, description, userId, muscles} = req.body;
+            const { name, type, description, targetMuscles} = req.body.body;
+            const token  = req.headers.authorization?.split(' ')[1];
 
-            if (!name && !type && !userId && !muscles ){
-                return errorHandler('Equipment name, type and muscles are required', req, res, next)
+            if (!token) {
+                return errorHandler("Unauthorized", req, res, next)
             }
 
-            const user = await prisma.user.findUnique({
-                where: { id: userId }
-            });
+            const isTokenValid = await UsersController.verifyToken(token);
 
-            if (!user){
-                return errorHandler('User not found', req, res, next)
+            if (!isTokenValid) {
+                return errorHandler("Token not valid", req, res, next)
+            }
+
+            const isUser = await prisma.user.findUnique({
+                where: {
+                    email: isTokenValid.email
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            })
+
+            if (!isUser) {
+                return errorHandler("User not found", req, res, next)
+            }
+
+            const userId = isUser.id;
+
+            if (!name && !type && !targetMuscles ){
+                return errorHandler('Equipment name, type and muscles are required', req, res, next)
             }
 
             // check if email already exixts
@@ -37,7 +58,7 @@ class EquipmentController {
                     description,
                     userId,
                     targetMuscles: {
-                        create: muscles.map(
+                        create: targetMuscles.map(
                             (muscle: string) => ({muscle: muscle})
                         )
                     }
@@ -99,6 +120,33 @@ class EquipmentController {
 
     public getAllEquipments = async(req: Request, res: Response, next: any) => {
         try {
+            const token  = req.headers.authorization?.split(' ')[1];
+
+            if (!token) {
+                return errorHandler("Unauthorized", req, res, next)
+            }
+
+            const isTokenValid = await UsersController.verifyToken(token);
+
+            if (!isTokenValid) {
+                return errorHandler("Token not valid", req, res, next)
+            }
+
+            const isUser = await prisma.user.findUnique({
+                where: {
+                    email: isTokenValid.email
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            })
+
+            if (!isUser) {
+                return errorHandler("User not found", req, res, next)
+            }
+
             const equipments = await prisma.equipment.findMany({
                 include: {
                     targetMuscles: {
@@ -110,7 +158,7 @@ class EquipmentController {
                 },
             });
             
-            res.status(201).json({
+            res.status(200).json({
                 success: true,
                 data: equipments,
                 message: 'Equipments retrieved successfully',
@@ -171,8 +219,34 @@ class EquipmentController {
     public deleteEquipment = async(req: Request, res: Response, next: any) => {   
 
         try {
+            const token  = req.headers.authorization?.split(' ')[1];
             const { id } = req.params;
             const equipmentId = parseInt(id);
+
+            if (!token) {
+                return errorHandler("Unauthorized", req, res, next)
+            }
+
+            const isTokenValid = await UsersController.verifyToken(token);
+
+            if (!isTokenValid) {
+                return errorHandler("Token not valid", req, res, next)
+            }
+
+            const isUser = await prisma.user.findUnique({
+                where: {
+                    email: isTokenValid.email
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            })
+
+            if (!isUser) {
+                return errorHandler("User not found", req, res, next)
+            }
 
             if (isNaN(equipmentId)) {
                 return errorHandler("Invalid equipment Id", req, res, next);

@@ -14,23 +14,55 @@ model User {
   username        String?
   password        String
   equipments      Equipment[]
+  workouts        WorkoutSession[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
 
 model Equipment {
-  id              Int       @id @default(autoincrement())
-  name            String    @unique
-  type            EquipmentType
-  description     String?
-  targetMuscles   TargetMuscle[]
-  createdBy       User      @relation(fields: [userId], references: [id])
-  userId          Int
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                      Int       @id @default(autoincrement())
+  name                    String    @unique
+  type                    EquipmentType
+  description             String?
+  targetMuscles           TargetMuscle[]
+  createdBy               User      @relation(fields: [userId], references: [id])
+  userId                  Int
+  workoutExercises        WorkoutExercise[]
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   @@unique([name, userId])
 }
+
+model WorkoutSession {
+  id                      Int                 @id @default(autoincrement())
+  workoutExercises        WorkoutExercise[]
+  date                    DateTime?             @default(now())
+  startTime               DateTime?             @default(now())
+  endTime                 DateTime?          
+  notes                   String?
+  user                    User                 @relation(fields: [userId], references: [id])
+  userId                  Int
+
+}
+
+model WorkoutExercise {
+  id                      Int             @id @default(autoincrement())
+  workoutSession          WorkoutSession    @relation(fields: [workoutSessionId], references: [id])
+  workoutSessionId        Int
+  equipment               Equipment         @relation(fields: [equipmentId], references: [id])
+  equipmentId             Int    
+  sets                    Set[]    
+}
+
+model Set{
+  id                      Int           @id @default(autoincrement())
+  reps                    Int
+  weight                  Float
+  workoutExercise         WorkoutExercise @relation(fields: [workoutExerciseId], references: [id])
+  workoutExerciseId       Int
+}
+
 
 model TargetMuscle {
   id              Int     @id @default(autoincrement())

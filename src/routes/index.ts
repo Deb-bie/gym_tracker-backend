@@ -17,6 +17,6 @@ router.get('/health', (req, res) => {
 // API routes
 router.use('/equipments', equipmentRoutes);
 router.use('/users', userRoutes )
-router.use('/workoutsession', workoutSessionRoutes)
+router.use('/workouts', workoutSessionRoutes)
 
 export default router;

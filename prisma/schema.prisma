@@ -52,7 +52,8 @@ model WorkoutExercise {
   workoutSessionId        Int
   equipment               Equipment         @relation(fields: [equipmentId], references: [id])
   equipmentId             Int    
-  sets                    Set[]    
+  sets                    Set[]
+  notes                   String?    
 }
 
 model Set{

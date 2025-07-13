@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import equipmentRoutes  from './equipment';
 import userRoutes from "./auth"
-import workoutSessionRoutes from "./workoutsession"
+import workoutSessionRoutes from "./workoutSession";
+import workoutExerciseRoutes from "./workoutExercise"
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.get('/health', (req, res) => {
 router.use('/equipments', equipmentRoutes);
 router.use('/users', userRoutes )
 router.use('/workouts', workoutSessionRoutes)
+router.use('/workout/exercises', workoutExerciseRoutes)
 
 export default router;

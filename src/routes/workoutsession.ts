@@ -4,5 +4,6 @@ const router = Router();
 
 router.post('/', WorkoutSessionController.createWorkoutSession);
 router.get('/:id', WorkoutSessionController.getWorkoutSessionById);
+router.patch('/:id', WorkoutSessionController.endWorkoutSession)
 
 export default router;

@@ -114,7 +114,7 @@ class WorkoutSessionController {
             });
 
             if (!workout) {
-                return errorHandler("Equipment not found", req, res, next);
+                return errorHandler("Workout session not found", req, res, next);
             }
             
             res.status(200).json({
@@ -128,6 +128,82 @@ class WorkoutSessionController {
         }
     }
 
+    
+    public endWorkoutSession = async(req: Request, res: Response, next: any) => {
+        try {
+            const { id } = req.params;
+            const {endTime } = req.body.body;
+            const workoutSessionId = parseInt(id);
+            const token  = req.headers.authorization?.split(' ')[1];
+
+            if (!token) {
+                return errorHandler("Unauthorized", req, res, next)
+            }
+
+            const isTokenValid = await UsersController.verifyToken(token);
+
+            if (!isTokenValid) {
+                return errorHandler("Token not valid", req, res, next)
+            }
+
+            const isUser = await prisma.user.findUnique({
+                where: {
+                    email: isTokenValid.email
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            })
+
+            if (!isUser) {
+                return errorHandler("User not found", req, res, next)
+            }
+
+            if (isNaN(workoutSessionId)) {
+                return errorHandler("Invalid workout session Id", req, res, next);
+            }
+
+            const workout = await prisma.workoutSession.findUnique({
+                where: {
+                    id: workoutSessionId
+                },
+                include: {
+                    workoutExercises: {
+                        select: {
+                            id: true,
+                            equipment: true,
+                            sets: true
+                        },
+                    },
+                },
+            });
+
+            if (!workout) {
+                return errorHandler("Workout Session not found", req, res, next);
+            }
+
+            const updateWorkoutSession = await prisma.workoutSession.update({
+                where: {
+                    id: workoutSessionId
+                },
+                data: {
+                    endTime
+                }
+
+            });
+            
+            res.status(200).json({
+                success: true,
+                data: updateWorkoutSession,
+                message: 'Workout updated successfully',
+            });
+        } catch (error) {
+            errorHandler(error, req, res, next)
+            console.log("err: ", error)
+        }
+    }
     
 }
 

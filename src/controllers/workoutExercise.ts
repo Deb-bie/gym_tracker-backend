@@ -8,7 +8,7 @@ import prisma from '../database/db';
 class WorkoutExerciseController {
     public addWorkoutExercise = async(req: Request, res: Response, next: any) => {
         try {
-            const { equipmentId, workoutSessionId, sets , notes} = req.body;
+            const { equipmentId, workoutSessionId, sets} = req.body.body;
             const token = req.headers.authorization?.split(' ')[1];
 
             if (!token) {
@@ -35,10 +35,6 @@ class WorkoutExerciseController {
                 return errorHandler("User not found", req, res, next)
             }
 
-            if (!equipmentId || !workoutSessionId || !sets) {
-                return errorHandler("Sets is required", req, res, next)
-            }
-
             const equipment = await prisma.equipment.findFirst({
                 where: {
                     id: equipmentId,
@@ -63,10 +59,13 @@ class WorkoutExerciseController {
 
             const workoutExercise = await prisma.workoutExercise.create({
                 data: {
-                    equipmentId, workoutSessionId, notes,
+                    equipmentId, workoutSessionId, 
                     sets: {
                         create: sets.map(
-                            (set: any) => ({set: set})
+                            (set: any) => ({
+                                reps: set.reps,
+                                weight: set.weight
+                            })
                         )
                     }
                 },

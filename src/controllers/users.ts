@@ -110,17 +110,11 @@ class UsersController {
     public getCurrentUser = async(req: Request, res: Response, next: any) => {
         try {
             const token  = req.headers.authorization?.split(' ')[1];
-            console.log("token: ", token)
 
             if (!token) {
                 return errorHandler('Unauthorized', req, res, next)
             }
-
             const decoded:any = jwt.verify(token, JWT_SECRET)
-
-            console.log("decoded: ", decoded)
-            console.log("decoded email: ", decoded.email?.toString())
-
             const user = await prisma.user.findUnique({
                 where: { 
                     email: decoded.email?.toString()
@@ -144,7 +138,7 @@ class UsersController {
             })
 
         } catch (error) {
-            console.log("err: ", error)
+            console.error("err: ", error)
             return errorHandler(error, req, res, next)
         }
     }
@@ -154,12 +148,8 @@ class UsersController {
             if (!token) {
                 throw new Error("Unauthorized");
             }
-
             const decoded:any = jwt.verify(token, JWT_SECRET)
-            //throw error if decoded is wrong
-
-            console.log("deocded: ", decoded)
-
+            console.log("decoded: ", decoded)
             const user = await prisma.user.findUnique({
                 where: { 
                     email: decoded.email?.toString()
@@ -170,6 +160,8 @@ class UsersController {
                     email: true
                 }
             });
+            
+            // console.log("user: ", user)
 
             if (!user) {
                 throw "User not found";

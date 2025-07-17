@@ -3,6 +3,7 @@ import equipmentRoutes  from './equipment';
 import userRoutes from "./auth"
 import workoutSessionRoutes from "./workoutSession";
 import workoutExerciseRoutes from "./workoutExercise"
+import progressRoutes from './progress'
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/equipments', equipmentRoutes);
 router.use('/users', userRoutes )
 router.use('/workouts', workoutSessionRoutes)
 router.use('/workout/exercises', workoutExerciseRoutes)
+router.use('/progress', progressRoutes)
 
 export default router;

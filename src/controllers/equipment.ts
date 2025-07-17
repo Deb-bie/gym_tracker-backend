@@ -86,7 +86,7 @@ class EquipmentController {
             const equipmentId = parseInt(id);
 
             if (isNaN(equipmentId)) {
-                return errorHandler("Invalid user Id", req, res, next);
+                return errorHandler("Invalid equipment Id", req, res, next);
             }
 
             const equipment = await prisma.equipment.findUnique({

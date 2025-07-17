@@ -204,7 +204,64 @@ class WorkoutSessionController {
             console.log("err: ", error)
         }
     }
-    
+
+
+    public getRecentWorkouts = async (req: Request, res: Response, next: any) => {
+        try {
+            const limit = parseInt(req.query.limit as string);
+            const token  = req.headers.authorization?.split(' ')[1];
+
+            if (!token) {
+                return errorHandler("Unauthorized", req, res, next)
+            }
+
+            const isTokenValid = await UsersController.verifyToken(token);
+
+            if (!isTokenValid) {
+                return errorHandler("Token not valid", req, res, next)
+            }
+
+            const isUser = await prisma.user.findUnique({
+                where: {
+                    email: isTokenValid.email
+                },
+                select: {
+                    id: true,
+                    username: true,
+                    email: true
+                }
+            })
+
+            if (!isUser) {
+                return errorHandler("User not found", req, res, next)
+            }
+
+            const workouts = await prisma.workoutSession.findMany({
+                take: limit,
+                orderBy: {
+                    date: 'desc'
+                },
+                include: {
+                    workoutExercises: {
+                        select: {
+                            id: true,
+                            equipment: true,
+                            sets: true
+                        },
+                    },
+                },
+            });
+            
+            res.status(200).json({
+                success: true,
+                data: workouts,
+                message: 'Workouts retrieved successfully',
+            });
+        } catch (error) {
+            errorHandler(error, req, res, next)
+            console.error("err: ", error)
+        }
+    }
 }
 
 
